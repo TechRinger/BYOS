@@ -1,0 +1,29 @@
+ubuntu:
+  hosts:
+    ubuntu1.example.com:
+      tags: [ external_server, ubuntu_docker]
+    ubuntu2.example.com:
+      tags: [ hosting_server, ubuntu_docker]
+  vars:
+      ansible_user: "{{ ubuntu_user }}"
+      ansible_ssh_pass: "{{ ubuntu_password }}"
+      ansible_become: true
+      ansible_become_method: sudo
+      ansible_connection: ssh
+windows:
+  hosts:
+    windows1.example.com:
+      tags: workstation
+    windows2.example.com:
+      ansible_user: "{{ windows_user }}"
+      tags: workstation
+    dc01.example.com:
+      tags: server
+  vars:
+    ansible_user: "{{ windows_user }}"
+    ansible_password: "{{ windows_password }}"
+    ansible_connection: winrm
+    ansible_winrm_transport: ntlm
+    ansible_winrm_server_cert_validation: ignore
+    ansible_port: 5986
+    

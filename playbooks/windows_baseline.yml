@@ -1,0 +1,25 @@
+---
+- name: Update and configure Windows machines
+  hosts: windows
+  tasks:
+    - name: Update Windows machines
+      win_updates:
+        category_names:
+          - SecurityUpdates
+          - CriticalUpdates
+
+    - name: Change DNS server on Windows
+      win_dns_client_global_setting:
+        servers:
+          - 10.1.1.53
+
+    - name: Download MSI file on Windows
+      win_get_url:
+        url: https://example.com/path/to/package.msi
+        dest: C:\Temp\package.msi
+
+    - name: Install MSI package on Windows
+      win_package:
+        path: C:\Temp\package.msi
+        arguments: 'ENDPOINT_TAGS="BYOS-Main" /qn'
+        state: present
