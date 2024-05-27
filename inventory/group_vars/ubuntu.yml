@@ -1,0 +1,10 @@
+---
+ansible_user: "{{ ubuntu_user }}"
+ansible_ssh_pass: "{{ ubuntu_password }}"
+ansible_become: true
+ansible_become_method: sudo
+ansible_connection: ssh
+container_count: 4
+default_container_name: docker
+default_container_image: ubuntu
+default_container_command: sleep 1

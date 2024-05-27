@@ -1,0 +1,9 @@
+---
+- name: Import Debian tasks
+  include_tasks: debian.yml
+  when: os_family == "Debian"
+
+- name: Import Windows tasks
+  include_tasks: windows.yml
+  when: os_family == "Windows"
+

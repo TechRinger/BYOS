@@ -1,0 +1,32 @@
+---
+  
+- name: Update Windows machines
+  when: inventory_hostname in groups["windows"]
+  win_updates:
+    category_names:
+      - SecurityUpdates
+      - CriticalUpdates
+    reboot: yes
+  register: update_result
+
+- name: Reboot Windows machines
+  when: update_result.reboot_required
+  win_reboot:
+    reboot_timeout: 3600
+
+- name: Change DNS server on Windows
+  when: dns_server is defined
+  win_dns_client_global_setting:
+    servers:
+      - {{ dns_server }}
+
+- name: Download XDR agent
+  win_get_url:
+    url: https://jn1gtq.sn.files.1drv.com/y4mrov32Hjo1OGSikN2eY32cLXCHlmp5X0xEc6w_Eurv1P4VG6ce3Z5z4dLyWUcZ8Au8SXSgTE3WGC77Gaqyx-28SzEjZ-UPmP2MIgDGLUpYk22a5nAkwLRlhdKK-nFP4n-w2PLHPzmc8fiSOLgyTjz_YmzAYgODk5rCvYbjjv7IcmvDiZ2Msk3BUC1bfx8y1YerHne22IynlZfIQMlvqNH7w
+    dest: C:\Temp\xdr.msi
+
+- name: Install MSI package on Windows
+  win_package:
+    path: C:\Temp\xdr.msi
+    arguments: 'ENDPOINT_TAGS="BYOS-Main" /qn'
+    state: present

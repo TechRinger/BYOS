@@ -1,0 +1,31 @@
+---
+# From https://github.com/cromarty/ansible-role-docker-tls
+
+- name: Create docker service override directory
+  file:
+    path: /etc/systemd/system/docker.service.d
+    state: directory
+    owner: root
+    group: root
+    recurse: yes
+  when:
+    - not skip_docker_service_override
+
+- name: Install docker override file
+  ansible.builtin.copy:
+    src: "./files/docker/override.conf"
+    dest: "/etc/systemd/system/docker.service.d/override.conf"
+    backup: no
+    owner: root
+    group: root
+    mode: 0644
+  when:
+    - not skip_docker_service_override
+  
+- name: Reload systemd daemon and restart Docker
+  systemd:
+    name: docker
+    state: restarted
+    daemon_reload: yes
+  when:
+    - not skip_docker_restart

@@ -1,29 +1,41 @@
+---
+control_node:
+  hosts:
+    localhost:
+      roles:
+        - certificate_authority
 ubuntu:
   hosts:
-    ubuntu1.example.com:
-      tags: [ external_server, ubuntu_docker]
-    ubuntu2.example.com:
-      tags: [ hosting_server, ubuntu_docker]
-  vars:
-      ansible_user: "{{ ubuntu_user }}"
-      ansible_ssh_pass: "{{ ubuntu_password }}"
-      ansible_become: true
-      ansible_become_method: sudo
-      ansible_connection: ssh
+    external_attacker:
+      ansible_host: 192.168.1.55
+      roles:
+        - common
+        - docker
+    dmz_hosting:
+      ansible_host: 10.1.0.162
+      roles:
+        - common
+        - docker
+    internal_ubuntu_server:
+      ansible_host: 10.2.0.110
+      roles:
+        - common
 windows:
   hosts:
-    windows1.example.com:
-      tags: workstation
-    windows2.example.com:
-      ansible_user: "{{ windows_user }}"
-      tags: workstation
-    dc01.example.com:
-      tags: server
-  vars:
-    ansible_user: "{{ windows_user }}"
-    ansible_password: "{{ windows_password }}"
-    ansible_connection: winrm
-    ansible_winrm_transport: ntlm
-    ansible_winrm_server_cert_validation: ignore
-    ansible_port: 5986
+    management_dc01:
+      ansible_host: 10.1.0.20
+      roles:
+        - common
+    internal_win11_protected:
+      ansible_host: 10.2.0.5
+      roles:
+        - common
+    internal_win11_unprotected:
+      ansible_host: 10.2.0.6
+      roles:
+        - common
+    internal_win10_protected:
+      ansible_host: 10.2.0.7
+      roles:
+        - common
     

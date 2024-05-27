@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "BYOS"
+version = "0.1.0"
+description = ""
+authors = ["TechRinger <rob@techringer.net>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+ansible = "^9.6.0"
+ansible-lint = {version = "^24.5.0", markers = "platform_system != 'Windows'"}
+pywinrm = "^0.4.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

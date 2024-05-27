@@ -1,0 +1,24 @@
+---
+# From: https://github.com/cromarty/ansible-role-docker-tls
+- name: Ensure temporary directory exists
+  file:
+    path: "./certs"
+    state: directory
+    owner: root
+    group: root
+    recurse: yes
+
+
+- name: Generate certificate authority private key
+  command: >
+    openssl genrsa -aes256 \
+    -passout pass:{{ privatekey_passphrase }} \
+    -out ./certs/ca-key.pem 4096
+
+- name: Generate certificate authority certificate
+  command: >
+    openssl req -new -x509 -days 365 \
+    -key ./certs/ca-key.pem -sha256 \
+    -out ./certs/ca.pem \
+    -passin pass:{{ privatekey_passphrase }} \
+    -subj '/C=USA/ST=TX>/L=Earth/O=Chaos Inc/CN=pewpewpew.com'

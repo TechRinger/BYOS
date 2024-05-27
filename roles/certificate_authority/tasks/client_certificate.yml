@@ -1,0 +1,35 @@
+---
+
+- name: Create client key
+  command: >
+    openssl genrsa -out ./client_key.pem 4096
+
+- name: Create client csr
+  command: >
+    openssl req -subj '/CN=client' -new -key ./client_key.pem -out ./client.csr
+
+- name: Remove extfile
+  file:
+    state: absent
+    path: "./extfile.cnf"
+
+- name: Create extfile
+  file:
+    state: touch
+    path: "./client_extfile.cnf"
+
+- name: Add extendedKeyUsage to extfile
+  lineinfile:
+    dest: "./client_extfile.cnf"
+    line: "extendedKeyUsage = clientAuth"
+
+
+- name: Create client certificate
+  command: >
+    openssl x509 -req -days 365 -sha256 \
+    -in ./client.csr \
+    -CA ./ca.pem \
+    -CAkey ./ca-client_key.pem \
+    -CAcreateserial -out ./cert.pem \
+    -extfile ./client_extfile.cnf \
+    -passin pass:{{ privatekey_passphrase }}

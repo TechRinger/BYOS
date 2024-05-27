@@ -1,0 +1,35 @@
+---
+- name: Set a fact if all .pem files are present
+  find:
+    paths: ".//certs"
+    files: {{ cert_files }}
+
+  register: all_pem_files_present
+
+- name: "Create passphrase variable"
+  when: "privatekey_passphrase is undefined or not all_pem_files_present"
+  ansible.builtin.set_fact:
+    privatekey_passphrase: "lookup('community.general.random_words', numwords=1, min_length=5, max_length=10)"
+
+
+- name: Debug - All .pem files are present
+  ansible.builtin.debug:
+    msg: "All .pem files are present. Skipping further tasks."
+  when: all_pem_files_present
+
+- name: Debug - Not all .pem files are present
+  ansible.builtin.debug:
+    msg: "Not all .pem files are present. Proceeding with tasks."
+  when: not all_pem_files_present
+
+- name: Create Certificate Authority
+  ansible.builtin.include_tasks: certificate_authority.yml
+  when: not all_pem_files_present
+
+- name: Create Server Certificate
+  ansible.builtin.include_tasks: server_certificate.yml
+  when: not all_pem_files_present
+
+- name: Create Client Certificate
+  ansible.builtin.include_tasks: client_certificate.yml
+  when: not all_pem_files_present

@@ -1,0 +1,8 @@
+---
+cert_files:
+  - key.pem
+  - cert.pem
+  - ca.pem
+
+server_certificate_path: "/etc/docker/ssl"
+docker_subjectAltName: "DNS:attacker.lab"

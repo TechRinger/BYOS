@@ -1,0 +1,111 @@
+---
+- name: Install necessary packages for Docker installation
+  become: true
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+    state: present
+
+- name: Copy over certifcates for CA
+  become: true
+  ansible.builtin.copy:
+    src: "./certs/{{ item }}"
+    dest: /usr/local/share/ca-certificates/
+    mode: '0644'
+  with_items:
+    - ca.pem
+
+- name: Copy over certifcates for Docker service
+  become: true
+  ansible.builtin.copy:
+    src: "./certs/{{ item }}"
+    dest: /etc/docker/ssl/
+    mode: '0644'
+  with_items:
+    - server-cert.pem
+    - server-key.pem
+    - ca.pem
+
+- name: Update CA Trust
+  command: update-ca-certificates
+  when: result is changed
+
+- name: Add Docker’s official GPG key
+  become: true
+  ansible.builtin.apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Set up the Docker repository
+  become: true
+  ansible.builtin.apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+    state: present
+
+- name: Install Docker Engine
+  become: true
+  ansible.builtin.apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - uidmap
+    state: latest
+
+- name: Create Docker group
+  become: true
+  ansible.builtin.group:
+    name: docker
+    state: present
+
+- name: Add user to Docker group
+  become: true
+  ansible.builtin.user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: true
+
+- name: Enable and start Docker service
+  become: true
+  ansible.builtin.systemd:
+    name: docker
+    enabled: true
+    state: started
+
+- name: Install rootless Docker dependencies
+  become: true
+  ansible.builtin.apt:
+    name:
+      - slirp4netns
+      - fuse-overlayfs
+    state: present
+
+- name: Set up rootless Docker for the user
+  changed_when: false
+  become: false
+  ansible.builtin.shell: |
+    export PATH=/usr/bin:$PATH
+    dockerd-rootless-setuptool.sh install
+  args:
+    executable: /bin/bash
+
+- name: Add Docker rootless path to user’s shell profile
+  become: false
+  ansible.builtin.lineinfile:
+    path: ~/.bashrc
+    line: 'export PATH=/usr/bin:$PATH'
+    state: present
+
+- name: Reload user’s shell profile
+  changed_when: false
+  become: false
+  ansible.builtin.shell: source ~/.bashrc
+  args:
+    executable: /bin/bash
+
+- name: Restart Docker
+  include_tasks: restart_docker.yml

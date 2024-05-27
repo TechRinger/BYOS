@@ -1,0 +1,35 @@
+---
+
+- name: Test playbook on localhost
+  hosts: localhost
+  tasks:
+    - name: Ensure the certs directory is present
+      ansible.builtin.file:
+        path: "./certs"
+        state: directory
+        mode: '0755'
+
+- name: "Check for openssl passphrase"
+  hosts: localhost
+  tasks:
+    - name: "Check for domain_name variable"
+      when: pass is undefined
+      ansible.builtin.set_fact:
+        domain_name: "lookup('community.general.random_words', numwords=1, min_length=5, max_length=10)"
+
+
+- name: Apply roles to Ubuntu and Windows hosts
+  hosts: all
+  tasks:
+    - name: Include certificate_authority role
+      ansible.builtin.include_role:
+        name: certificate_authority
+
+    - name: Include common role
+      ansible.builtin.include_role:
+        name: common
+
+    - name: Include additional roles based on host-specific variables
+      ansible.builtin.include_role:
+        name: "{{ item }}"
+      loop: "{{ roles }}"
